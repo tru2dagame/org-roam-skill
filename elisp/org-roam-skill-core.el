@@ -131,23 +131,27 @@ Returns the result of FUNCTION."
               (funcall function node))
           (error "Could not locate node in file: %s" title-or-id))))))
 
-(defun org-roam-skill--get-filename-format ()
+(defun org-roam-skill--get-filename-format (&optional template-key)
   "Extract filename format from user's org-roam capture templates.
-Return the filename pattern from the default template, or a fallback."
-  (let* ((default-template (assoc "d" org-roam-capture-templates))
+TEMPLATE-KEY is a string key matching `org-roam-capture-templates' (e.g. \"r\").
+If nil, defaults to \"d\".
+Return the filename pattern from the template, or a fallback."
+  (let* ((template (assoc (or template-key "d") org-roam-capture-templates))
          ;; Skip key, description, type, template-content to get to plist
-         (plist (cdr (cdr (cdr (cdr default-template)))))
-         (target (plist-get plist :target)))
+         (plist (cdr (cdr (cdr (cdr template)))))
+         (target (or (plist-get plist :target)
+                     (plist-get plist :if-new))))
     (if (and target (eq (car target) 'file+head))
         ;; Extract first argument of file+head
         (nth 1 target)
       ;; Fallback to timestamp-only if no template found
       "%<%Y%m%d%H%M%S>.org")))
 
-(defun org-roam-skill--expand-filename (title)
+(defun org-roam-skill--expand-filename (title &optional template-key)
   "Generate a filename for TITLE using the user's configured format.
+TEMPLATE-KEY selects which capture template to use (default \"d\").
 Expand placeholders like %<...>, ${slug}, ${title}, etc."
-  (let* ((format-string (org-roam-skill--get-filename-format))
+  (let* ((format-string (org-roam-skill--get-filename-format template-key))
          ;; Create slug manually: lowercase, replace spaces with underscores
          (slug (replace-regexp-in-string " " "_" (downcase title)))
          (timestamp (format-time-string "%Y%m%d%H%M%S"))
@@ -174,12 +178,15 @@ Expand placeholders like %<...>, ${slug}, ${title}, etc."
 
     filename))
 
-(defun org-roam-skill--get-head-content ()
+(defun org-roam-skill--get-head-content (&optional template-key)
   "Extract head content from user's org-roam capture template.
+TEMPLATE-KEY is a string key matching `org-roam-capture-templates' (e.g. \"r\").
+If nil, defaults to \"d\".
 Return the head template string, or nil if not found."
-  (let* ((default-template (assoc "d" org-roam-capture-templates))
-         (plist (cdr (cdr (cdr (cdr default-template)))))
-         (target (plist-get plist :target)))
+  (let* ((template (assoc (or template-key "d") org-roam-capture-templates))
+         (plist (cdr (cdr (cdr (cdr template)))))
+         (target (or (plist-get plist :target)
+                     (plist-get plist :if-new))))
     (when (and target (eq (car target) 'file+head))
       ;; Second argument of file+head is the head content
       (nth 2 target))))

@@ -1,0 +1,21 @@
+{
+  "name": "org-roam-marketplace",
+  "owner": {
+    "name": "majorgreys"
+  },
+  "metadata": {
+    "description": "Org-roam skill for Claude Code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "org-roam-skill",
+      "description": "Org-mode formatting and org-roam note management via emacsclient",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/roam"
+      ]
+    }
+  ]
+}

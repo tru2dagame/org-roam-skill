@@ -57,6 +57,9 @@ All operations use the auto-loading wrapper `${CLAUDE_PLUGIN_ROOT}/skills/roam/s
 # Create note (tags MUST be a list, not string)
 ${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-note \"Title\" :tags '(\"tag\") :content \"text\")"
 
+# Create note with a specific capture template (e.g. "r" for research → study/ dir)
+${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-note \"Title\" :template \"r\" :tags '(\"tag\"))"
+
 # Create with large content (recommended for >1KB content)
 TEMP=$(mktemp -t org-roam-content.XXXXXX)
 echo "Large content..." > "$TEMP"
@@ -93,6 +96,11 @@ ${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-
 **With tags and content:**
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-note \"React Hooks\" :tags '(\"javascript\" \"react\") :content \"Brief notes here\")"
+```
+
+**With a specific capture template:**
+```bash
+${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-note \"SQL Query Notes\" :template \"s\" :tags '(\"sql\") :content \"Query details\")"
 ```
 
 **With large content (recommended for complex/large content):**
