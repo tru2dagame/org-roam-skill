@@ -317,6 +317,83 @@
         (when (file-exists-p org-roam-directory)
           (delete-directory org-roam-directory t))))))
 
+  (it "creates notes in subdirectory when :template specifies one"
+    (let* ((org-roam-directory (make-temp-file "org-roam-test-" t))
+           (org-roam-db-location (expand-file-name "org-roam.db" org-roam-directory))
+           (org-roam-capture-templates
+            '(("d" "default" plain "%?"
+               :target (file+head "%<%Y%m%d%H%M%S>.org" "#+TITLE: ${title}")
+               :unnarrowed t)
+              ("r" "research" plain "%?"
+               :target (file+head "study/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+               :unnarrowed t))))
+      (unwind-protect
+          (progn
+            (org-roam-db-sync)
+            (let ((file-path (org-roam-skill-create-note "Research Topic"
+                                                          :tags '("research")
+                                                          :content "Study notes"
+                                                          :template "r")))
+              ;; File should exist
+              (expect (file-exists-p file-path) :to-be t)
+              ;; File should be in study/ subdirectory
+              (expect file-path :to-match "/study/")
+              ;; Filename should contain slug
+              (expect (file-name-nondirectory file-path) :to-match "research_topic")
+              ;; Content should be correct
+              (with-temp-buffer
+                (insert-file-contents file-path)
+                (let ((content (buffer-string)))
+                  (expect content :to-match "Study notes")
+                  (expect content :to-match ":ID:")))))
+        (when (file-exists-p org-roam-directory)
+          (delete-directory org-roam-directory t)))))
+
+  (it "falls back to default template when :template is nil"
+    (let* ((org-roam-directory (make-temp-file "org-roam-test-" t))
+           (org-roam-db-location (expand-file-name "org-roam.db" org-roam-directory))
+           (org-roam-capture-templates
+            '(("d" "default" plain "%?"
+               :target (file+head "%<%Y%m%d%H%M%S>.org" "#+TITLE: ${title}")
+               :unnarrowed t)
+              ("r" "research" plain "%?"
+               :target (file+head "study/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n")
+               :unnarrowed t))))
+      (unwind-protect
+          (progn
+            (org-roam-db-sync)
+            (let ((file-path (org-roam-skill-create-note "Default Note"
+                                                          :content "Default content")))
+              (expect (file-exists-p file-path) :to-be t)
+              ;; Should NOT be in study/ subdirectory
+              (expect file-path :not :to-match "/study/")))
+        (when (file-exists-p org-roam-directory)
+          (delete-directory org-roam-directory t)))))
+
+  (it "handles :if-new target keyword (alternative to :target)"
+    (let* ((org-roam-directory (make-temp-file "org-roam-test-" t))
+           (org-roam-db-location (expand-file-name "org-roam.db" org-roam-directory))
+           (org-roam-capture-templates
+            '(("d" "default" plain "%?"
+               :target (file+head "%<%Y%m%d%H%M%S>.org" "#+TITLE: ${title}")
+               :unnarrowed t)
+              ("s" "sql" plain "%?"
+               :if-new (file+head "sql/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+category: ${title}\n#+filetags: :rds:sql:")
+               :unnarrowed t))))
+      (unwind-protect
+          (progn
+            (org-roam-db-sync)
+            (let ((file-path (org-roam-skill-create-note "SQL Query"
+                                                          :template "s")))
+              (expect (file-exists-p file-path) :to-be t)
+              (expect file-path :to-match "/sql/")
+              (with-temp-buffer
+                (insert-file-contents file-path)
+                (let ((content (buffer-string)))
+                  (expect content :to-match ":rds:sql:")))))
+        (when (file-exists-p org-roam-directory)
+          (delete-directory org-roam-directory t))))))
+
 ;;; Temp File Cleanup Tests
 
 (describe "org-roam-skill--looks-like-temp-file"

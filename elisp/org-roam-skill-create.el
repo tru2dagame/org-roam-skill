@@ -16,7 +16,7 @@
 (require 'org-roam-skill-core)
 
 ;;;###autoload
-(cl-defun org-roam-skill-create-note (title &key tags content content-file keep-file)
+(cl-defun org-roam-skill-create-note (title &key tags content content-file keep-file template)
   "Create a new org-roam note with TITLE, optional TAGS and CONTENT.
 Automatically detect filename format and head content from capture
 templates. Work with any org-roam configuration - no customization
@@ -26,6 +26,9 @@ TAGS is a list of tag strings.
 CONTENT can be provided as a string (small content) or via
 CONTENT-FILE path (recommended for large content). If both are
 provided, CONTENT-FILE takes priority.
+TEMPLATE is a string key matching `org-roam-capture-templates'
+\(e.g. \"r\" for research, \"s\" for sql). If nil, defaults to \"d\".
+This controls the filename format, subdirectory, and head content.
 
 CONTENT FORMAT:
 Content should be in `org-mode' format. For markdown conversion or
@@ -40,10 +43,10 @@ deletion, pass KEEP-FILE as t. This eliminates the need for manual
 cleanup in shell scripts.
 
 Return the file path of the created note."
-  (let* ((file-name (org-roam-skill--expand-filename title))
+  (let* ((file-name (org-roam-skill--expand-filename title template))
          (file-path (expand-file-name file-name org-roam-directory))
          (node-id (org-id-uuid))
-         (head-content (org-roam-skill--get-head-content))
+         (head-content (org-roam-skill--get-head-content template))
          ;; Read content from file if provided, otherwise use content parameter
          (actual-content (cond
                           (content-file (org-roam-skill--read-content-file content-file))
@@ -52,6 +55,11 @@ Return the file path of the created note."
 
     (unwind-protect
         (progn
+          ;; Ensure parent directory exists (for templates with subdirectories)
+          (let ((dir (file-name-directory file-path)))
+            (unless (file-directory-p dir)
+              (make-directory dir t)))
+
           ;; Create the file with proper org-roam structure
           (with-temp-file file-path
             ;; Insert PROPERTIES block with ID

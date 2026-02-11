@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - Unreleased
+
+### Added
+
+- **`:template` parameter for `org-roam-skill-create-note`**: Specify which
+  `org-roam-capture-templates` entry to use when creating notes. This controls
+  the filename format, subdirectory, and head content. For example,
+  `:template "r"` uses the "research" template which may write to `study/`.
+  Defaults to `"d"` when not specified (fully backward compatible).
+- Support for `:if-new` target keyword (alternative to `:target`) in capture
+  templates, used by some org-roam configurations.
+- Automatic creation of subdirectories when a template specifies a path with
+  directories (e.g. `study/%<%Y%m%d%H%M%S>-${slug}.org`).
+
 ## [2.0.0] - 2025-12-15
 
 ### BREAKING CHANGES

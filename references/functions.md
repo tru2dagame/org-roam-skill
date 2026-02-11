@@ -18,7 +18,7 @@ Detailed documentation for all org-roam-skill functions.
 
 Create a new org-roam note with auto-detection of template format.
 
-**Signature**: `(org-roam-skill-create-note TITLE &key tags content content-file keep-file)`
+**Signature**: `(org-roam-skill-create-note TITLE &key tags content content-file keep-file template)`
 
 **Parameters:**
 - `TITLE` (string, required): The note title
@@ -26,6 +26,7 @@ Create a new org-roam note with auto-detection of template format.
 - `:content` (string, optional): Initial content (for small/simple content)
 - `:content-file` (string, optional): Path to file containing content (for large content)
 - `:keep-file` (boolean, optional): If `t`, prevent automatic deletion of `:content-file`
+- `:template` (string, optional): Capture template key from `org-roam-capture-templates` (e.g. `"r"` for research, `"s"` for sql). Controls filename format, subdirectory, and head content. Defaults to `"d"` if not specified
 
 **Examples:**
 
@@ -37,6 +38,11 @@ ${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-
 With tags and content:
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-note \"React Hooks\" :tags '(\"javascript\" \"react\") :content \"Notes about hooks\")"
+```
+
+With a specific capture template:
+```bash
+${CLAUDE_PLUGIN_ROOT}/skills/roam/scripts/org-roam-eval "(org-roam-skill-create-note \"Research Topic\" :template \"r\" :tags '(\"research\") :content \"Notes\")"
 ```
 
 Large content via file:
